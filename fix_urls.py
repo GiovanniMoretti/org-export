@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 Colorize source-code blocks using pygments.
@@ -21,7 +21,7 @@ def fix_urls(tree, rexp, xpath, attr):
         if url and rexp.search(url):
             # link_str = html.tostring(link).strip()
             link.set(attr, '../' + url)
-            # print '{} -> {}'.format(link_str, html.tostring(link).strip())
+            # print ('{} -> {}'.format(link_str, html.tostring(link).strip()))
 
 
 def main(arguments):
@@ -41,17 +41,21 @@ def main(arguments):
     infiles = chain.from_iterable(glob.glob(path.join(args.output, f, '*.html'))
                                   for f in ['author', 'category', 'tag'])
 
+    # There were problems with writing the page - it complained that
+    # the type was BYTE not str so explicitly convert to and from
     for infile in infiles:
-        # print infile
-
         with open(infile) as f:
-            tree = html.fromstring(f.read())
+            pageAsUTF8 = f.read()
+            pageAsBytes = pageAsUTF8.encode(encoding='UTF-8')
+            tree = html.fromstring(pageAsBytes)
 
         fix_urls(tree, rexp, '//img', 'src')
         fix_urls(tree, rexp, '//a', 'href')
 
         with open(infile, 'w') as f:
-            f.write(html.tostring(tree))
+            pageAsUTF8 =html.tostring(tree).decode(encoding="UTF-8") 
+            print("RESULT", type(pageAsUTF8), infile)
+            f.write(pageAsUTF8)
 
 
 if __name__ == '__main__':
